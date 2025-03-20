@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <!-- Add Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Login</h2>
+    <!-- Update the form to include th:action, th:object, and method attributes -->
+    <form th:action="@{/auth/login}" th:object="${loginRequest}" method="post">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <!-- Update input to use th:field for binding -->
+            <input type="text" class="form-control" id="username" th:field="*{username}" placeholder="Enter username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <!-- Update input to use th:field for binding -->
+            <input type="password" class="form-control" id="password" th:field="*{password}" placeholder="Password" required>
+        </div>
+        <!-- Change the link to a submit button -->
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+</body>
+</html>
+

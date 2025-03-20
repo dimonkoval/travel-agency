@@ -1,0 +1,28 @@
+server.port=8080
+
+# DataSource settings
+#spring.datasource.url=jdbc:postgresql://localhost:5432/travel_agency
+spring.datasource.url=jdbc:://localhost:5432/travel_agency
+spring.datasource.username=${Database_Username}
+spring.datasource.password=${Database_Password}
+
+
+
+
+
+# Hibernate properties
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
+
+# H2
+#spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+#spring.h2.console.enabled=true
+#spring.h2.console.path=/h2-console
+
+application.security.jwt.secret-key = 404E635263336A586E3272357538782F413F4428472B4B6250645367566B5970
+application.security.jwt.expiration = 86400000
+application.security.jwt.refresh-token.expiration = 172800000
+
+org.springframework.security=DEBUG
+spring.jpa.show-sql=true
+
