@@ -20,7 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+//import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -67,20 +67,20 @@ public class SecurityConfiguration {
                                 "/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler((request, response, authentication) -> {
-                            OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
-                            UserDetails userDetails = userDetailsService.loadUserByUsername(oauthUser.getAttribute("email"));
-                            String token = jwtService.generateToken(userDetails, false);
-                            response.sendRedirect("/api/oauth2/success?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8));
-                        })
-                        .failureHandler((request, response, exception) -> {
-                            log.error("OAuth2 error: {}", exception.getMessage(), exception);
-                            if (!response.isCommitted()) {
-                                response.sendRedirect("/api/oauth2/failure");
-                            }
-                        })
-                )
+//                .oauth2Login(oauth2 -> oauth2
+//                        .successHandler((request, response, authentication) -> {
+//                            OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
+//                            UserDetails userDetails = userDetailsService.loadUserByUsername(oauthUser.getAttribute("email"));
+//                            String token = jwtService.generateToken(userDetails, false);
+//                            response.sendRedirect("/api/oauth2/success?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8));
+//                        })
+//                        .failureHandler((request, response, exception) -> {
+//                            log.error("OAuth2 error: {}", exception.getMessage(), exception);
+//                            if (!response.isCommitted()) {
+//                                response.sendRedirect("/api/oauth2/failure");
+//                            }
+//                        })
+//                )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider);
         return http.build();
