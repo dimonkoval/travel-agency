@@ -2,8 +2,6 @@
 
 The purpose of this task is to check your knowledge in Java and Spring.
 
-Duration: **18** hours
-
 ## Description
 
 In this task, you will implement "Travel Agency Service" using MVC pattern. All the main classes are available and waiting
