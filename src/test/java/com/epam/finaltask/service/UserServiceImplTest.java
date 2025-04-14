@@ -40,7 +40,7 @@ public class UserServiceImplTest {
 
   @Test
   void getUserByUsername_UserExists_Success() {
-    // Given
+
     String username = "existingUser";
     User user = new User();
     user.setUsername(username);
@@ -51,10 +51,8 @@ public class UserServiceImplTest {
     when(userRepository.findUserByUsername(username)).thenReturn(Optional.of(user));
     when(userMapper.toUserDTO(any(User.class))).thenReturn(expectedUserDTO);
 
-    // When
     UserDTO result = userService.getUserByUsername(username);
 
-    // Then
     assertNotNull(result, "The returned UserDTO should not be null");
     assertEquals(expectedUserDTO.getUsername(), result.getUsername(),
         "The username should match the expected value");
@@ -65,7 +63,6 @@ public class UserServiceImplTest {
 
   @Test
   void changeAccountStatus_UserExist_Success() {
-    // Given
     String userId = UUID.randomUUID().toString();
     UserDTO userDTO = new UserDTO();
     userDTO.setId(userId);
@@ -84,10 +81,8 @@ public class UserServiceImplTest {
     when(userRepository.save(any(User.class))).thenReturn(updatedUser);
     when(userMapper.toUserDTO(any(User.class))).thenReturn(userDTO);
 
-    // When
     UserDTO resultDTO = userService.changeAccountStatus(userDTO);
 
-    // Then
     assertNotNull(resultDTO, "The returned UserDTO should not be null");
     assertTrue(resultDTO.isActive(), "The account status should be updated to true");
 
@@ -98,7 +93,7 @@ public class UserServiceImplTest {
 
   @Test
   void getUserById_UserExist_Success() {
-    // Given
+
     UUID id = UUID.randomUUID();
     User user = new User();
     user.setId(id);
@@ -109,10 +104,8 @@ public class UserServiceImplTest {
     when(userRepository.findById(id)).thenReturn(Optional.of(user));
     when(userMapper.toUserDTO(any(User.class))).thenReturn(expectedUserDTO);
 
-    // When
     UserDTO resultDTO = userService.getUserById(id);
 
-    // Then
     assertNotNull(resultDTO, "The returned UserDTO should not be null");
     assertEquals(expectedUserDTO.getId(), resultDTO.getId(),
         "The user ID should match the expected value");

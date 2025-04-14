@@ -3,6 +3,9 @@ package com.epam.finaltask.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
+import com.epam.finaltask.dto.groups.OAuthGroup;
+import com.epam.finaltask.dto.groups.PasswordGroup;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -13,6 +16,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -32,7 +38,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users")
+@Table(name = "users", schema = "traveldb" )
 public class User implements UserDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -41,16 +47,19 @@ public class User implements UserDetails {
 	@Column(nullable = false, unique = true)
     private String username;
 
-	@NotBlank(message = "Password cannot be empty")
-	@Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
 	@Enumerated(EnumType.STRING)
     private Role role;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToMany
+	@JoinTable(
+			name = "users_vouchers",
+			joinColumns = @JoinColumn(name = "user_id"),
+			inverseJoinColumns = @JoinColumn(name = "voucher_id")
+	)
 	@JsonManagedReference
-    private List<Voucher> vouchers;
+	private List<Voucher> vouchers;
 
     private String phoneNumber;
 

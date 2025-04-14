@@ -2,6 +2,7 @@ package com.epam.finaltask.token;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Slf4j
 @Component
@@ -31,23 +33,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         log.info("Processing request: {}", request.getRequestURI());
-        final String authHeader = request.getHeader("Authorization");
-        final String tokenParam = request.getParameter("token");
-        final String jwt;
-        final String userEmail;
+//        final String authHeader = request.getHeader("Authorization");
+//        final String tokenParam = request.getParameter("token");
+//        final String jwt;
+//        final String userEmail;
 
-        if (tokenParam != null) {
-            jwt = tokenParam;
+        // 1. Спроба отримати токен з кук
+        String jwt = extractTokenFromCookies(request);
+
+        // 2. Якщо токен не знайдено в куках - перевіряємо параметр та заголовок
+        if (jwt == null) {
+            final String tokenParam = request.getParameter("token");
+            final String authHeader = request.getHeader("Authorization");
+
+            if (tokenParam != null) {
+                jwt = tokenParam;
+            } else if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String tokenFromHeader = authHeader.substring(7);
+                if (!tokenFromHeader.isBlank()) { // Додано перевірку
+                    jwt = tokenFromHeader;
+                }
+            }
         }
-        else if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            log.info("Token: " + authHeader.substring(7));
-            jwt = authHeader.substring(7);
-        } else {
+
+        // 3. Якщо токен так і не знайдено - продовжуємо ланцюжок фільтрів
+        if (jwt == null || jwt.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        userEmail = jwtService.extractUsername(jwt);
+//        if (tokenParam != null) {
+//            jwt = tokenParam;
+//        }
+//        else if (authHeader != null && authHeader.startsWith("Bearer ")) {
+//            log.info("Token: " + authHeader.substring(7));
+//            jwt = authHeader.substring(7);
+//        } else {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+        log.info("JWT extracted: {}", jwt);
+        final String userEmail = jwtService.extractUsername(jwt);
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -62,6 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                log.info("JWT authentication successful for: {}", userEmail);
             }
         }
 
@@ -78,5 +104,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/oauth2/")
                 || path.startsWith("/h2-console/")
                 || path.equals("/api/swagger-ui.html");
+    }
+
+    private String extractTokenFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            log.debug("Cookies in request: {}", Arrays.toString(cookies));
+            for (Cookie cookie : cookies) {
+                if ("JWT_TOKEN".equals(cookie.getName())) {
+                    log.debug("JWT_TOKEN found: {}", cookie.getValue());
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

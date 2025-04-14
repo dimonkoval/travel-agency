@@ -21,7 +21,7 @@ public interface UserMapper {
     UserResponseDTO toUserResponseDTO(User user, List<VoucherDTO> vouchers);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "password", ignore = false)
     User toUser(UserDTO userDTO);
 
     @Mapping(target = "id", ignore = true)

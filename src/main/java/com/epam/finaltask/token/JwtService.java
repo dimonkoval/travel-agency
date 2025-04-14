@@ -29,14 +29,14 @@ public class JwtService {
     private static final String CLAIM_REFRESH_TOKEN = "isRefreshToken";
     private final UserDetailsService userDetailsService;
     private final AuthenticationService authenticationService;
-    //    @Value("${jwt.secret-key}")
-    private String SECRET_KEY = "2B4D6251655468576D5A7134743677397A24432646294A404E635266556A586E";
+    @Value("${jwt.secret-key}")
+    private String SECRET_KEY;
 
-    //    @Value("${jwt.token-expiration-time}")
-    private Long accessTokenExpiration = 86400000L;
+    @Value("${jwt.token-expiration-time}")
+    private Long accessTokenExpiration;
 
-    //    @Value("${jwt.refresh-token-expiration}")
-    private Long refreshTokenExpiration =  172800000L;
+    @Value("${jwt.refresh-token-expiration}")
+    private Long refreshTokenExpiration;
 
     public JwtService(UserDetailsService userDetailsService,  @Lazy AuthenticationService authenticationService) {
         this.userDetailsService = userDetailsService;
@@ -54,6 +54,7 @@ public class JwtService {
             Map<String, Object> extractClaims,
             UserDetails userDetail,
             boolean isRefreshToken) {
+        log.info("Generating token for user: {}", userDetail.getUsername());
         Long expirationTime = determineExpirationTime(isRefreshToken);
         return Jwts
                 .builder()

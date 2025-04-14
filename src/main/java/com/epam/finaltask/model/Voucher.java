@@ -1,16 +1,19 @@
 package com.epam.finaltask.model;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -25,7 +28,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "vouchers")
+@Table(name = "vouchers", schema = "traveldb")
 public class Voucher {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -49,17 +52,13 @@ public class Voucher {
     @Enumerated(EnumType.STRING)
     private HotelType hotelType;
 
-    @Enumerated(EnumType.STRING)
-    private VoucherStatus status;
-
     private LocalDate arrivalDate;
 
     private LocalDate evictionDate;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToMany(mappedBy = "vouchers")
     @JsonBackReference
-    private User user;
+    private List<User> users;
 
     private Boolean isHot;
 }
