@@ -3,6 +3,7 @@ package com.epam.finaltask.repository;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +40,7 @@ class VoucherRepositoryTest {
         voucher.setId(UUID.randomUUID());
         voucher.setTourType(TourType.ECO);
         voucher.setTransferType(TransferType.BUS);
-        voucher.setPrice(1001.0);
+        voucher.setPrice(BigDecimal.valueOf(1001));
         voucher.setHotelType(HotelType.FIVE_STARS);
 
         voucherList = List.of(voucher);
@@ -83,20 +84,6 @@ class VoucherRepositoryTest {
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertEquals(transferType, result.getContent().get(0).getTransferType());
-    }
-
-    @Test
-    void findAllByPrice_ShouldReturnPageOfVouchers_WhenPriceExists() {
-        Double price = 1001.0;
-        Page<Voucher> page = new PageImpl<>(voucherList);
-
-        when(voucherRepository.findAllByPrice(price, pageable)).thenReturn(page);
-
-        Page<Voucher> result = voucherRepository.findAllByPrice(price, pageable);
-
-        assertNotNull(result);
-        assertEquals(1, result.getContent().size());
-        assertEquals(price, result.getContent().get(0).getPrice());
     }
 
     @Test
