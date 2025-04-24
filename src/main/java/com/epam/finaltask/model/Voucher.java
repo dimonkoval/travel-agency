@@ -1,5 +1,6 @@
 package com.epam.finaltask.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +42,7 @@ public class Voucher {
     private String description;
 
     @Column(nullable = false)
-    private Double price;
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     private TourType tourType;

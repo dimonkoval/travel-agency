@@ -161,7 +161,7 @@ public class UserServiceImpl implements UserService {
 				.id(user.getId().toString())
 				.username(user.getUsername())
 				.email(user.getEmail())
-				.balance(BigDecimal.valueOf(user.getBalance()))
+				.balance(user.getBalance())
 				.vouchers(userVouchers)
 				.role(user.getRole())
 				.build();

@@ -33,17 +33,17 @@ public interface UserVoucherMapper {
     List<VoucherDTO> toVoucherDTOList(List<UserVoucher> userVouchers);
 
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "user.id", target = "userId")  // Беремо ID користувача
-    @Mapping(source = "voucher.id", target = "voucherId")  // Беремо ID ваучера
-    @Mapping(source = "voucher.title", target = "title")  // Назва ваучера
-    @Mapping(source = "voucher.description", target = "description")  // Опис ваучера
-    @Mapping(source = "voucher.price", target = "price")  // Ціна ваучера
-    @Mapping(source = "voucher.tourType", target = "tourType")  // Тип туру
-    @Mapping(source = "voucher.transferType", target = "transferType")  // Тип трансферу
-    @Mapping(source = "voucher.hotelType", target = "hotelType")  // Тип готелю
-    @Mapping(source = "status", target = "status")  // Статус
-    @Mapping(source = "voucher.arrivalDate", target = "arrivalDate")  // Дата приїзду
-    @Mapping(source = "voucher.evictionDate", target = "evictionDate")  // Дата виселення
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "voucher.id", target = "voucherId")
+    @Mapping(source = "voucher.title", target = "title")
+    @Mapping(source = "voucher.description", target = "description")
+    @Mapping(source = "voucher.price", target = "price")
+    @Mapping(source = "voucher.tourType", target = "tourType")
+    @Mapping(source = "voucher.transferType", target = "transferType")
+    @Mapping(source = "voucher.hotelType", target = "hotelType")
+    @Mapping(source = "status", target = "status")
+    @Mapping(source = "voucher.arrivalDate", target = "arrivalDate")
+    @Mapping(source = "voucher.evictionDate", target = "evictionDate")
     @Mapping(source = "voucher.isHot", target = "isHot")
     UserVoucherDTO toUserVoucherDTO(UserVoucher userVoucher);
 }

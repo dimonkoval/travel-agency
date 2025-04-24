@@ -1,5 +1,8 @@
 package com.epam.finaltask.service.impl;
 
+import static com.epam.finaltask.exception.StatusCodes.ENTITY_NOT_FOUND;
+import com.epam.finaltask.dto.UserVoucherDTO;
+import com.epam.finaltask.dto.UserVouchersForReviewDTO;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.mapper.UserVoucherMapper;
 import com.epam.finaltask.mapper.VoucherMapper;
@@ -23,11 +26,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import static com.epam.finaltask.exception.StatusCodes.ENTITY_NOT_FOUND;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -168,11 +175,12 @@ public class VoucherServiceImpl implements VoucherService {
         Voucher voucher = voucherRepository.findById(userVoucher.getVoucher().getId())
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
 
-        if (user.getBalance() < voucher.getPrice()) {
+        if (user.getBalance().compareTo(voucher.getPrice()) < 0) {
             throw new RuntimeException("Not enough money to buy this voucher.");
         }
 
-        user.setBalance(user.getBalance() - voucher.getPrice());
+        user.setBalance(user.getBalance().subtract(voucher.getPrice()));
+
         userRepository.save(user);
 
         userVoucher.setStatus(VoucherStatus.PAID);
@@ -184,17 +192,46 @@ public class VoucherServiceImpl implements VoucherService {
 
         UserVoucher userVoucher = userVoucherRepository.findById(UUID.fromString(userVoucherId))
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
-//        User user = userRepository.findById(userVoucher.getUser().getId())
-//                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-//            Voucher voucher = voucherRepository.findById(userVoucher.getVoucher().getId())
-//                    .orElseThrow(() -> new EntityNotFoundException("Voucher not found"));
 
-//            UserVoucher userVoucher = userVoucherRepository.findByUserAndVoucher(user, voucher)
-//                    .orElseThrow(() -> new EntityNotFoundException("UserVoucher not found"));
-
-            // Зміна статусу на "CANCELED"
             userVoucher.setStatus(VoucherStatus.CANCELED);
             userVoucherRepository.save(userVoucher);
+    }
+
+    @Override
+    public void cancelVoucher(UUID userVoucherId) {
+        UserVoucher userVoucher = userVoucherRepository.findById(userVoucherId)
+                .orElseThrow(() -> new EntityNotFoundException("Voucher not found"));
+        if (userVoucher.getStatus() != VoucherStatus.CANCELED) {
+
+            if (userVoucher.getStatus() == VoucherStatus.PAID) {
+                User user = userVoucher.getUser();
+                BigDecimal currentBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+                BigDecimal refundAmount = userVoucher.getVoucher().getPrice();
+
+                user.setBalance(currentBalance.add(refundAmount));
+            }
+            userVoucher.setStatus(VoucherStatus.CANCELED);
+            userVoucherRepository.save(userVoucher);
+        }
+    }
+
+    @Override
+    public Map<User, List<VoucherDTO>> getVouchersGroupedByUser() {
+        List<UserVoucher> userVouchers = userVoucherRepository.findAllWithUserAndVoucher();
+
+        return userVouchers.stream()
+                .collect(Collectors.groupingBy(
+                        UserVoucher::getUser,
+                        Collectors.mapping(userVoucherMapper::toVoucherDTO, Collectors.toList())
+                ));
+    }
+
+    @Override
+    public List<VoucherDTO> getAllVouchersWithUsers() {
+        return userVoucherRepository.findAllWithUserAndVoucher()
+                .stream()
+                .map(userVoucherMapper::toVoucherDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -204,4 +241,62 @@ public class VoucherServiceImpl implements VoucherService {
         voucher.setIsHot(true);
         voucherRepository.save(voucher);
     }
+
+    public List<UserVouchersForReviewDTO> getUsersVouchersForReview() {
+        List<UserVoucher> userVouchers = userVoucherRepository.findAllWithUserAndVoucher();
+
+//        Map<User, List<UserVoucher>> grouped = userVouchers.stream()
+//                .collect(Collectors.groupingBy(UserVoucher::getUser));
+
+        Map<User, List<UserVoucher>> grouped = userVouchers.stream()
+                .collect(Collectors.groupingBy(
+                        UserVoucher::getUser,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+
+        return grouped.entrySet().stream()
+                .map(entry -> {
+                    User user = entry.getKey();
+                    List<UserVoucherDTO> voucherDTOs = entry.getValue().stream()
+                            .map(userVoucherMapper::toUserVoucherDTO)
+                            .sorted(Comparator.comparing(UserVoucherDTO::getTitle))
+                            .collect(Collectors.toList());
+
+                    BigDecimal totalSpent = voucherDTOs.stream()
+                            .map(UserVoucherDTO::getPrice)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    // Поки немає реальних даних по замовленнях — умовно вважаємо totalOrdersSum кількістю ваучерів (можеш замінити логікою з реальних даних)
+                    BigDecimal totalOrdersSum = BigDecimal.valueOf(voucherDTOs.size());
+
+                    return UserVouchersForReviewDTO.builder()
+                            .userId(user.getId().toString())
+                            .username(user.getUsername())
+                            .email(user.getEmail())
+                            .vouchers(voucherDTOs)
+                            .totalSpent(totalSpent)
+                            .totalOrdersSum(totalOrdersSum)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public BigDecimal getTotalOrders(List<UserVouchersForReviewDTO> usersVouchers) {
+        return usersVouchers.stream()
+                .map(UserVouchersForReviewDTO::getTotalOrdersSum)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public BigDecimal getTotalSpent(List<UserVouchersForReviewDTO> userVouchers) {
+        return userVouchers.stream()
+                .map(UserVouchersForReviewDTO::getTotalSpent)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
 }

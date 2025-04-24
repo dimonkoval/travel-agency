@@ -16,6 +16,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class AuthenticationService {
                     .password(passwordEncoder.encode(userDTO.getPassword()))
                     .role(Role.USER)
                     .phoneNumber(userDTO.getPhoneNumber())
-                    .balance(Double.valueOf(0))
+                    .balance(BigDecimal.valueOf(0))
                     .active(true)
                     .email(userDTO.getEmail())
                     .build();

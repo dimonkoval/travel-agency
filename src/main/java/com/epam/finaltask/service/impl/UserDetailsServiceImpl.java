@@ -2,7 +2,6 @@ package com.epam.finaltask.service.impl;
 
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
-import com.epam.finaltask.service.OAuth2UserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,12 +26,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 user.isAccountNonLocked(),
                 user.getAuthorities()
         );
-    }
-
-    public UserDetails loadUserByOAuth2(String email) {
-        return userRepository.findUserByEmail(email)
-                .map(user -> new OAuth2UserDetails(user.getEmail(), user.getPassword()))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
 

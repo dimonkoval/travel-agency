@@ -3,7 +3,6 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 
-
 <!-- Navigation bar -->
 <nav th:fragment="navbar(showSignIn, targetUrl)" class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" th:href="@{/}" th:text="#{navbar.brand}">Travel Agency</a>
@@ -17,18 +16,25 @@
                 </a>
             </li>
             <li class="nav-item">
-
                 <a class="nav-link active" aria-current="page" th:href="@{/user/dashboard}">
                     <i class="bi-search"></i>
                     <span th:text="#{navbar.vouchers}">Vouchers</span>
                 </a>
             </li>
+            <li class="nav-item" sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')">
+                <a class="nav-link" th:href="@{/api/manager/vouchers}">
+                    <i class="bi-gear"></i>
+                    <span th:text="#{navbar.manager}">Manager</span>
+                </a>
+            </li>
+
             <li class="nav-item" sec:authorize="hasRole('ADMIN')">
                 <a class="nav-link" th:href="@{/api/admin/users}">
                     <i class="bi-gear"></i>
                     <span th:text="#{navbar.admin}">Admin</span>
                 </a>
             </li>
+
         </ul>
         <ul class="navbar-nav ml-auto">
             <!-- Language switcher -->
@@ -59,7 +65,6 @@
                 </a>
             </li>
 
-<!--            <li class="nav-item" sec:authorize="isAuthenticated()">-->
             <li class="nav-item" th:if="${username != null}">
                 <a class="nav-link" th:href="@{/api/auth/logout}">
                     <i class="bi bi-box-arrow-right"></i>

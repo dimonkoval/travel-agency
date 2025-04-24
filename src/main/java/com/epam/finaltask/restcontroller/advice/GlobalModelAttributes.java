@@ -10,6 +10,7 @@ public class GlobalModelAttributes {
 
     @ModelAttribute("username")
     public String addUsernameToModel(Principal principal) {
+
         return principal != null ? principal.getName() : null;
     }
 }

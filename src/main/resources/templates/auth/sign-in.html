@@ -14,12 +14,12 @@
 
 <div class="container">
     <h2>Login</h2>
-<!--    <a href="/oauth2/authorization/google" class="btn btn-light mb-3">-->
-<!--        <img src="https://www.svgrepo.com/show/475656/google-color.svg"-->
-<!--             alt="Google"-->
-<!--             style="width:30px; height:30px; margin-right:5px;">-->
-<!--        Sign in with Google-->
-<!--    </a>-->
+    <a href="/oauth2/authorization/google" class="btn btn-light mb-3">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg"
+             alt="Google"
+             style="width:30px; height:30px; margin-right:5px;">
+        Sign in with Google
+    </a>
     <!-- Форма входу -->
     <form th:action="@{/api/auth/login}" th:object="${loginRequest}" method="post">
 <!--        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
