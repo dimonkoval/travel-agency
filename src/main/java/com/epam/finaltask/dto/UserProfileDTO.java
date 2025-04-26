@@ -18,5 +18,6 @@ public class UserProfileDTO {
     private String email;
     private BigDecimal balance;
     private Role role;
+    private String avatarPath;
     private List<UserVoucherDTO> vouchers;
 }

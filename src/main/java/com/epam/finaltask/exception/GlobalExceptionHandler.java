@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
+import org.thymeleaf.exceptions.TemplateProcessingException;
+
 import java.util.Date;
 
 @Slf4j
@@ -31,6 +33,13 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
         return buildErrorModelAndView(ex, HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
+
+    @ExceptionHandler(TemplateProcessingException.class)
+    public ModelAndView handleTemplateProcessingException(TemplateProcessingException ex, WebRequest request) {
+        log.error("Template processing error: {}", ex.getMessage(), ex);
+        return buildErrorModelAndView(ex, HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
 
     private ModelAndView buildErrorModelAndView(Exception ex, HttpStatus status, WebRequest request) {
         ModelAndView modelAndView = new ModelAndView("error/" + status.value());

@@ -1,6 +1,10 @@
 package com.epam.finaltask.service;
 
-import java.math.BigDecimal;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -14,6 +18,7 @@ import com.epam.finaltask.dto.groups.PasswordGroup;
 import com.epam.finaltask.exception.EntityAlreadyExistsException;
 import com.epam.finaltask.exception.EntityNotFoundException;
 import com.epam.finaltask.mapper.UserMapper;
+import com.epam.finaltask.mapper.UserProfileMapper;
 import com.epam.finaltask.mapper.UserVoucherMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
@@ -28,6 +33,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import static com.epam.finaltask.exception.StatusCodes.ENTITY_ALREADY_EXISTS;
 import static com.epam.finaltask.exception.StatusCodes.ENTITY_NOT_FOUND;
 
@@ -42,8 +49,12 @@ public class UserServiceImpl implements UserService {
 	private final UserVoucherMapper userVoucherMapper;
 	@Qualifier("validator")
 	private final Validator validator;
+	private final UserProfileMapper userProfileMapper;
+	private final Path avatarUploadDir = Paths.get("uploads/avatars");
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, VoucherService voucherService, UserVoucherRepository userVoucherRepository, UserVoucherMapper userVoucherMapper, Validator validator) {
+	public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder,
+						   VoucherService voucherService, UserVoucherRepository userVoucherRepository,
+						   UserVoucherMapper userVoucherMapper, Validator validator, UserProfileMapper userProfileMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
@@ -51,6 +62,7 @@ public class UserServiceImpl implements UserService {
         this.userVoucherRepository = userVoucherRepository;
         this.userVoucherMapper = userVoucherMapper;
         this.validator = validator;
+		this.userProfileMapper = userProfileMapper;
     }
 
 	@Override
@@ -157,14 +169,7 @@ public class UserServiceImpl implements UserService {
 				.map(userVoucherMapper::toUserVoucherDTO)
 				.toList();
 
-		return UserProfileDTO.builder()
-				.id(user.getId().toString())
-				.username(user.getUsername())
-				.email(user.getEmail())
-				.balance(user.getBalance())
-				.vouchers(userVouchers)
-				.role(user.getRole())
-				.build();
+		return userProfileMapper.toUserProfileDTO(user, userVouchers);
 	}
 
 	@Override
@@ -197,5 +202,29 @@ public class UserServiceImpl implements UserService {
 				.orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
 		user.setActive(!user.getActive());
 		userRepository.save(user);
+	}
+
+	@Override
+	public void updateUserAvatar(String name, MultipartFile avatar) throws IOException {
+		// Отримуємо користувача за email, використовуючи principal
+		User user = userRepository.findUserByEmail(name)
+				.orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
+
+		String avatarPath = storeAvatarFile(avatar);
+
+		user.setAvatarPath("/" + avatarPath.replace("\\", "/")); // нормалізуємо шлях
+		userRepository.save(user);
+	}
+
+	private String storeAvatarFile(MultipartFile file) throws IOException {
+		if (!Files.exists(avatarUploadDir)) {
+			Files.createDirectories(avatarUploadDir);
+		}
+
+		String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+		Path targetPath = avatarUploadDir.resolve(filename).normalize();
+		Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+		return targetPath.toString();
 	}
 }

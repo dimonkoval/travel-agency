@@ -1,13 +1,7 @@
 package com.epam.finaltask.config;
 
-import com.epam.finaltask.dto.UserDTO;
-import com.epam.finaltask.exception.EntityNotFoundException;
-import com.epam.finaltask.model.Role;
 import com.epam.finaltask.service.CustomOAuth2UserService;
-import com.epam.finaltask.service.UserService;
-import com.epam.finaltask.service.impl.UserDetailsServiceImpl;
 import com.epam.finaltask.token.JwtAuthenticationFilter;
-import com.epam.finaltask.token.JwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
@@ -45,25 +37,18 @@ import java.util.List;
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final JwtService  jwtService;
-    private final UserDetailsServiceImpl userDetailsService;
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
-    private final UserService userService;
     private final AuthenticationEntryPoint authenticationEntryPoint;
     private final CustomOAuth2UserService customOAuth2UserService;
 
     public SecurityConfiguration(JwtAuthenticationFilter jwtAuthFilter,
                                  @Lazy AuthenticationProvider authenticationProvider,
-                                 JwtService jwtService, UserDetailsServiceImpl userDetailsService,
                                  AuthorizationRequestRepository authorizationRequestRepository,
-                                 @Lazy UserService userService, @Lazy AuthenticationEntryPoint authenticationEntryPoint,
+                                 @Lazy AuthenticationEntryPoint authenticationEntryPoint,
                                  CustomOAuth2UserService customOAuth2UserService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.authenticationProvider = authenticationProvider;
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
         this.authorizationRequestRepository = authorizationRequestRepository;
-        this.userService = userService;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.customOAuth2UserService = customOAuth2UserService;
     }

@@ -62,6 +62,8 @@ public class User implements UserDetails {
 
     private Boolean active;
 
+	private String avatarPath;
+
 	@Override
 	public String getUsername() {
 		return email;
