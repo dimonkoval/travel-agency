@@ -25,3 +25,12 @@ mvn -version
 
 # Збираємо проєкт
 mvn clean install
+
+echo "Java version:"
+java -version
+
+echo "Maven version:"
+mvn -version
+
+echo "Contents of target/:"
+ls -l target/
