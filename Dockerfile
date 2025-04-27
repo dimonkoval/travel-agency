@@ -1,20 +1,5 @@
-# Використовуємо офіційний образ OpenJDK
-FROM openjdk:17-jdk-slim
-
-# Встановлюємо Maven
-RUN apt-get update && apt-get install -y maven
-
-# Встановлюємо робочу директорію
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
-
-# Копіюємо ваш проект в контейнер
 COPY . .
-
-# Будуємо проект
-RUN mvn clean install
-
-# Відкриваємо порт для застосунку
-EXPOSE 8090
-
-# Запускаємо додаток
-CMD ["mvn", "spring-boot:run"]
+RUN ./mvnw clean install
+CMD ["java", "-jar", "target/your-app-name.jar"]
