@@ -12,4 +12,4 @@ RUN apt-get update -y && apt-get install -y maven
 RUN mvn clean install
 
 # Команда для запуску
-CMD ["java", "-jar", "target/your-app-name.jar"]
+CMD ["java", "-jar", "target/travel.agency.jar"]
