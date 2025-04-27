@@ -17,5 +17,11 @@ wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bi
 tar -xvf apache-maven-3.9.6-bin.tar.gz
 export PATH="$PWD/apache-maven-3.9.6/bin:$PATH"
 
+
+echo "JAVA_HOME: $JAVA_HOME"
+echo "PATH: $PATH"
+java -version
+mvn -version
+
 # Збираємо проєкт
 mvn clean install
