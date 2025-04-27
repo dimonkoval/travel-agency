@@ -1,5 +1,15 @@
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:17-jdk  # Офіційний образ з JDK 17
+
 WORKDIR /app
+
+# Копіюємо файли проєкту
 COPY . .
-RUN ./mvnw clean install
+
+# Встановлюємо Maven
+RUN apt-get update -y && apt-get install -y maven
+
+# Збираємо проєкт
+RUN mvn clean install
+
+# Команда для запуску
 CMD ["java", "-jar", "target/your-app-name.jar"]
