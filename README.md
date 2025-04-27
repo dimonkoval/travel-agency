@@ -2,7 +2,9 @@
 
 
 ## Description
-
+A full-stack web application for managing travel vouchers.  
+Users can register, log in (via email or Google OAuth2), browse available vouchers, book them, and leave reviews.  
+Admins and managers have role-based access to manage users and vouchers.
 
 
 The class diagram of the Domain model is shown in the figure below:
