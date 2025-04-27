@@ -1,15 +1,13 @@
-FROM eclipse-temurin:17-jdk  # Офіційний образ з JDK 17
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
-
-# Копіюємо файли проєкту
 COPY . .
 
 # Встановлюємо Maven
-RUN apt-get update -y && apt-get install -y maven
+RUN apt-get update && apt-get install -y maven
 
-# Збираємо проєкт
+# Збираємо JAR
 RUN mvn clean install
 
-# Команда для запуску
-CMD ["java", "-jar", "target/travel.agency.jar"]
+# Запускаємо JAR (назва відповідає вашому pom.xml)
+CMD ["java", "-jar", "target/travel.agency-0.0.1-SNAPSHOT.jar"]
