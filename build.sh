@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "JAVA_HOME: $JAVA_HOME"
+echo "PATH: $PATH"
+java -version
+mvn -version
+
 # Встановлюємо OpenJDK 17
 apt-get update -y && apt-get install -y openjdk-17-jdk
 
