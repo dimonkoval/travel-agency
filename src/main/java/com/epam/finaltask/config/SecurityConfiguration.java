@@ -1,8 +1,7 @@
 package com.epam.finaltask.config;
 
-import com.epam.finaltask.service.impl.UserDetailsServiceImpl;
+import com.epam.finaltask.service.CustomOAuth2UserService;
 import com.epam.finaltask.token.JwtAuthenticationFilter;
-import com.epam.finaltask.token.JwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,18 +15,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,14 +37,20 @@ import java.util.List;
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final JwtService  jwtService;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthFilter, @Lazy AuthenticationProvider authenticationProvider, JwtService jwtService, UserDetailsServiceImpl userDetailsService) {
+    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthFilter,
+                                 @Lazy AuthenticationProvider authenticationProvider,
+                                 AuthorizationRequestRepository authorizationRequestRepository,
+                                 @Lazy AuthenticationEntryPoint authenticationEntryPoint,
+                                 CustomOAuth2UserService customOAuth2UserService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.authenticationProvider = authenticationProvider;
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.authorizationRequestRepository = authorizationRequestRepository;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.customOAuth2UserService = customOAuth2UserService;
     }
 
     @Bean
@@ -56,32 +61,44 @@ public class SecurityConfiguration {
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'self'"))
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                                 "/api/auth/**",
                                 "/api/oauth2/**",
                                 "/login/oauth2/**",
+                                "/oauth2/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
+                                "/css/**",
+                                "/js/**",
+                                "/",
+                                "/auth/sign-in",
                                 "/error").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                )
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler((request, response, authentication) -> {
-                            OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
-                            UserDetails userDetails = userDetailsService.loadUserByUsername(oauthUser.getAttribute("email"));
-                            String token = jwtService.generateToken(userDetails, false);
-                            response.sendRedirect("/api/oauth2/success?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8));
-                        })
-                        .failureHandler((request, response, exception) -> {
-                            log.error("OAuth2 error: {}", exception.getMessage(), exception);
-                            if (!response.isCommitted()) {
-                                response.sendRedirect("/api/oauth2/failure");
-                            }
-                        })
+                                .authorizationEndpoint(authorization -> authorization
+                                        .baseUri("/oauth2/authorization")
+                                        .authorizationRequestRepository(authorizationRequestRepository)
+                                )
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .defaultSuccessUrl("/", true)
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessUrl("/")
+                        .deleteCookies("JWT_TOKEN")
+                        .clearAuthentication(true)
+                        .invalidateHttpSession(true)
+                        .permitAll()
+                )
                 .authenticationProvider(authenticationProvider);
         return http.build();
     }
@@ -90,7 +107,7 @@ public class SecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.addAllowedOriginPattern("http://localhost:*");
+        configuration.addAllowedOriginPattern("http://localhost:8080");
         configuration.addAllowedOriginPattern("*");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
@@ -119,5 +136,10 @@ public class SecurityConfiguration {
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new LoginUrlAuthenticationEntryPoint("/api/auth/sign-in");
     }
 }

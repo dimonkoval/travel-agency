@@ -1,13 +1,20 @@
 package com.epam.finaltask.service.impl;
 
+import static com.epam.finaltask.exception.StatusCodes.ENTITY_NOT_FOUND;
+import com.epam.finaltask.dto.UserVoucherDTO;
+import com.epam.finaltask.dto.UserVouchersForReviewDTO;
 import com.epam.finaltask.dto.VoucherDTO;
+import com.epam.finaltask.mapper.UserVoucherMapper;
 import com.epam.finaltask.mapper.VoucherMapper;
+import com.epam.finaltask.model.User;
+import com.epam.finaltask.model.UserVoucher;
 import com.epam.finaltask.model.Voucher;
 import com.epam.finaltask.model.HotelType;
 import com.epam.finaltask.model.TourType;
 import com.epam.finaltask.model.TransferType;
 import com.epam.finaltask.model.VoucherStatus;
 import com.epam.finaltask.repository.UserRepository;
+import com.epam.finaltask.repository.UserVoucherRepository;
 import com.epam.finaltask.repository.VoucherRepository;
 import com.epam.finaltask.service.VoucherService;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,13 +23,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import static com.epam.finaltask.exception.StatusCodes.ENTITY_NOT_FOUND;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -30,33 +40,31 @@ public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
     private final VoucherMapper voucherMapper;
+    private final UserVoucherMapper userVoucherMapper;
+    private final UserVoucherRepository userVoucherRepository;
 
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
-        Voucher voucher = voucherRepository.save(voucherMapper.toVoucher(voucherDTO));
+        Voucher voucher = voucherMapper.toVoucher(voucherDTO);
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
 
     @Override
-    public VoucherDTO order(String id, String userId) {
-        Voucher voucher = voucherRepository.findById(UUID.fromString(id))
+    public VoucherDTO order(String voucherId, String userId) {
+        Voucher voucher = voucherRepository.findById(UUID.fromString(voucherId))
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
-        userRepository.findById(UUID.fromString(userId))
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
 
-        if (voucher.getStatus() != VoucherStatus.REGISTERED) {
-            throw new IllegalStateException("Voucher cannot be ordered");
-        }
-
-        voucher.setStatus(VoucherStatus.PAID);
-        voucherRepository.save(voucher);
+        UserVoucher userVoucher = userVoucherMapper.createUserVoucher(user, voucher);
+        userVoucherRepository.save(userVoucher);
         return voucherMapper.toVoucherDTO(voucher);
     }
 
     @Override
     public VoucherDTO update(String id, VoucherDTO voucherDTO) {
         Voucher voucher = voucherRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher not found"));
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
         voucherMapper.updateVoucherFromDto(voucher, voucherDTO);
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
@@ -69,7 +77,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO changeHotStatus(String id, VoucherDTO voucherDTO) {
         Voucher voucher = voucherRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher not found"));
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
         voucher.setIsHot(voucherDTO.getIsHot());
         voucherRepository.save(voucher);
         return voucherMapper.toVoucherDTO(voucher);
@@ -79,13 +87,12 @@ public class VoucherServiceImpl implements VoucherService {
     public List<VoucherDTO> findAllByUserId(String userId) {
         try {
             UUID uuid = UUID.fromString(userId);
-            List<Voucher> vouchers = voucherRepository.findAllByUserId(uuid);
-            if (vouchers == null) {
+            List<UserVoucher> userVouchers = userVoucherRepository.findAllByUserId(uuid);
+            if (userVouchers == null) {
                 return Collections.emptyList();
             }
-            return vouchers.stream()
-                    .map(voucherMapper::toVoucherDTO)
-                    .toList();
+
+            return userVoucherMapper.toVoucherDTOList(userVouchers);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Невірний формат userId");
         }
@@ -122,11 +129,122 @@ public class VoucherServiceImpl implements VoucherService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void markAsHot(UUID id) {
-        Voucher voucher = voucherRepository.findById(id)
+    @Override
+    public Page<VoucherDTO> searchVouchers(String title, TourType tourType, HotelType hotelType, TransferType transferType, Double maxPrice, Pageable pageable) {
+        String titlePattern = null;
+        if (title != null && !title.trim().isEmpty()) {
+            titlePattern = "%" + title.toLowerCase() + "%"; // Формуємо шаблон на стороні Java
+        }
+        return voucherRepository.search(titlePattern, tourType, hotelType, transferType, maxPrice, pageable)
+                .map(voucherMapper::toVoucherDTO);
+    }
+
+    @Override
+    public VoucherDTO getById(String id) {
+        Voucher voucher = voucherRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
+        return voucherMapper.toVoucherDTO(voucher);
+    }
+
+    @Override
+    public void buyVoucher(String userVoucherId) {
+        UserVoucher userVoucher = userVoucherRepository.findById(UUID.fromString(userVoucherId))
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
+        User user = userRepository.findById(userVoucher.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
+        Voucher voucher = voucherRepository.findById(userVoucher.getVoucher().getId())
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
+
+        if (user.getBalance().compareTo(voucher.getPrice()) < 0) {
+            throw new RuntimeException("Not enough money to buy this voucher.");
+        }
+
+        user.setBalance(user.getBalance().subtract(voucher.getPrice()));
+
+        userRepository.save(user);
+
+        userVoucher.setStatus(VoucherStatus.PAID);
+        userVoucherRepository.save(userVoucher);
+    }
+
+    @Override
+    public void cancelOrder(String userVoucherId) {
+
+        UserVoucher userVoucher = userVoucherRepository.findById(UUID.fromString(userVoucherId))
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
+
+            userVoucher.setStatus(VoucherStatus.CANCELED);
+            userVoucherRepository.save(userVoucher);
+    }
+
+    @Override
+    public void cancelVoucher(UUID userVoucherId) {
+        UserVoucher userVoucher = userVoucherRepository.findById(userVoucherId)
                 .orElseThrow(() -> new EntityNotFoundException("Voucher not found"));
-        voucher.setIsHot(true);
-        voucherRepository.save(voucher);
+        if (userVoucher.getStatus() != VoucherStatus.CANCELED) {
+
+            if (userVoucher.getStatus() == VoucherStatus.PAID) {
+                User user = userVoucher.getUser();
+                BigDecimal currentBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+                BigDecimal refundAmount = userVoucher.getVoucher().getPrice();
+
+                user.setBalance(currentBalance.add(refundAmount));
+            }
+            userVoucher.setStatus(VoucherStatus.CANCELED);
+            userVoucherRepository.save(userVoucher);
+        }
+    }
+
+    public List<UserVouchersForReviewDTO> getUsersVouchersForReview() {
+        List<UserVoucher> userVouchers = userVoucherRepository.findAllWithUserAndVoucher();
+
+        Map<User, List<UserVoucher>> grouped = userVouchers.stream()
+                .collect(Collectors.groupingBy(
+                        UserVoucher::getUser,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+
+        return grouped.entrySet().stream()
+                .map(entry -> {
+                    User user = entry.getKey();
+                    List<UserVoucherDTO> voucherDTOs = entry.getValue().stream()
+                            .map(userVoucherMapper::toUserVoucherDTO)
+                            .sorted(Comparator.comparing(UserVoucherDTO::getTitle))
+                            .collect(Collectors.toList());
+
+                    BigDecimal totalSpent = voucherDTOs.stream()
+                            .map(UserVoucherDTO::getPrice)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal totalOrdersSum = BigDecimal.valueOf(voucherDTOs.size());
+
+                    return UserVouchersForReviewDTO.builder()
+                            .userId(user.getId().toString())
+                            .username(user.getUsername())
+                            .email(user.getEmail())
+                            .vouchers(voucherDTOs)
+                            .totalSpent(totalSpent)
+                            .totalOrdersSum(totalOrdersSum)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public BigDecimal getTotalOrders(List<UserVouchersForReviewDTO> usersVouchers) {
+        return usersVouchers.stream()
+                .map(UserVouchersForReviewDTO::getTotalOrdersSum)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public BigDecimal getTotalSpent(List<UserVouchersForReviewDTO> userVouchers) {
+        return userVouchers.stream()
+                .map(UserVouchersForReviewDTO::getTotalSpent)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

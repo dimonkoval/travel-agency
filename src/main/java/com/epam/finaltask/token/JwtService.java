@@ -54,6 +54,7 @@ public class JwtService {
             Map<String, Object> extractClaims,
             UserDetails userDetail,
             boolean isRefreshToken) {
+        log.info("Generating token for user: {}", userDetail.getUsername());
         Long expirationTime = determineExpirationTime(isRefreshToken);
         return Jwts
                 .builder()

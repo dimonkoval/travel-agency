@@ -3,6 +3,7 @@ package com.epam.finaltask.auth;
 import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.exception.EntityNotFoundException;
 import com.epam.finaltask.mapper.UserMapper;
+import com.epam.finaltask.model.Role;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.token.JwtService;
@@ -14,6 +15,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Slf4j
 @Service
@@ -30,10 +33,10 @@ public class AuthenticationService {
             User user = User.builder()
                     .username(userDTO.getUsername())
                     .password(passwordEncoder.encode(userDTO.getPassword()))
-                    .role(userDTO.getRole())
+                    .role(Role.USER)
                     .phoneNumber(userDTO.getPhoneNumber())
-                    .balance(userDTO.getBalance())
-                    .active(userDTO.isActive())
+                    .balance(BigDecimal.valueOf(0))
+                    .active(true)
                     .email(userDTO.getEmail())
                     .build();
             userRepository.save(user);
@@ -66,5 +69,16 @@ public class AuthenticationService {
             log.error("Unexpected error during authentication", ex);
             throw new RuntimeException(ex.getMessage());
         }
+    }
+
+    public boolean userExists(String email) {
+        return userRepository.findUserByEmail(email).isPresent();
+    }
+
+    public boolean isUserBlocked(String email) {
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return user != null && !user.getActive();
     }
 }

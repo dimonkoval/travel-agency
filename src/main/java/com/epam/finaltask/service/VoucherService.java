@@ -1,9 +1,13 @@
 package com.epam.finaltask.service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
+import com.epam.finaltask.dto.UserVouchersForReviewDTO;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.model.HotelType;
 import com.epam.finaltask.model.TourType;
+import com.epam.finaltask.model.TransferType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +25,20 @@ public interface VoucherService {
     Page<VoucherDTO> findAllByHotelType(HotelType hotelType, Pageable pageable);
 
     List<VoucherDTO> findAll();
+
+    Page<VoucherDTO> searchVouchers(String title, TourType tourType, HotelType hotelType, TransferType transferType, Double price, Pageable pageable);
+
+    VoucherDTO getById(String id);
+
+    void buyVoucher(String userVoucherId);
+
+    void cancelOrder(String userVoucherId);
+
+    void cancelVoucher(UUID userVoucherId);
+
+    List<UserVouchersForReviewDTO> getUsersVouchersForReview();
+
+    BigDecimal getTotalOrders(List<UserVouchersForReviewDTO> usersVouchers);
+
+    BigDecimal getTotalSpent(List<UserVouchersForReviewDTO> userVouchers);
 }

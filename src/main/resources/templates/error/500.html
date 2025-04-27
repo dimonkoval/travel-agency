@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>500 - Internal Server Error</title>
+    <link rel="stylesheet" th:href="@{/css/error.css}">
+</head>
+<body>
+<div class="error-container">
+    <h1>500</h1>
+    <p th:text="${error.message}">Internal Server Error</p>
+    <p>Timestamp: <span th:text="${#dates.format(error.timestamp, 'dd.MM.yyyy HH:mm')}"></span></p>
+    <a th:href="@{/}">Повернутися на головну</a>
+</div>
+</body>
+</html>

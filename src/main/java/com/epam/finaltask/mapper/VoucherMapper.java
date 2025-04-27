@@ -9,11 +9,10 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface VoucherMapper {
 
-    @Mapping(source = "user.id", target = "userId")
     VoucherDTO toVoucherDTO(Voucher voucher);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(source = "userId", target = "user.id")
+//    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "id", expression = "java(java.util.UUID.fromString(voucherDTO.getId()))")
     Voucher toVoucher(VoucherDTO voucherDTO);
 
     @Mapping(target = "id", ignore = true)

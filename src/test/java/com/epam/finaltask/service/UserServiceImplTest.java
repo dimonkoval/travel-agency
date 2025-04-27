@@ -7,30 +7,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
+class UserServiceImplTest {
 
   @Mock
   private UserRepository userRepository;
-
-  @Mock
-  private PasswordEncoder passwordEncoder;
 
   @Mock
   private UserMapper userMapper;
@@ -40,7 +33,7 @@ public class UserServiceImplTest {
 
   @Test
   void getUserByUsername_UserExists_Success() {
-    // Given
+
     String username = "existingUser";
     User user = new User();
     user.setUsername(username);
@@ -51,10 +44,8 @@ public class UserServiceImplTest {
     when(userRepository.findUserByUsername(username)).thenReturn(Optional.of(user));
     when(userMapper.toUserDTO(any(User.class))).thenReturn(expectedUserDTO);
 
-    // When
     UserDTO result = userService.getUserByUsername(username);
 
-    // Then
     assertNotNull(result, "The returned UserDTO should not be null");
     assertEquals(expectedUserDTO.getUsername(), result.getUsername(),
         "The username should match the expected value");
@@ -65,7 +56,6 @@ public class UserServiceImplTest {
 
   @Test
   void changeAccountStatus_UserExist_Success() {
-    // Given
     String userId = UUID.randomUUID().toString();
     UserDTO userDTO = new UserDTO();
     userDTO.setId(userId);
@@ -84,10 +74,8 @@ public class UserServiceImplTest {
     when(userRepository.save(any(User.class))).thenReturn(updatedUser);
     when(userMapper.toUserDTO(any(User.class))).thenReturn(userDTO);
 
-    // When
     UserDTO resultDTO = userService.changeAccountStatus(userDTO);
 
-    // Then
     assertNotNull(resultDTO, "The returned UserDTO should not be null");
     assertTrue(resultDTO.isActive(), "The account status should be updated to true");
 
@@ -98,7 +86,7 @@ public class UserServiceImplTest {
 
   @Test
   void getUserById_UserExist_Success() {
-    // Given
+
     UUID id = UUID.randomUUID();
     User user = new User();
     user.setId(id);
@@ -109,10 +97,8 @@ public class UserServiceImplTest {
     when(userRepository.findById(id)).thenReturn(Optional.of(user));
     when(userMapper.toUserDTO(any(User.class))).thenReturn(expectedUserDTO);
 
-    // When
     UserDTO resultDTO = userService.getUserById(id);
 
-    // Then
     assertNotNull(resultDTO, "The returned UserDTO should not be null");
     assertEquals(expectedUserDTO.getId(), resultDTO.getId(),
         "The user ID should match the expected value");
