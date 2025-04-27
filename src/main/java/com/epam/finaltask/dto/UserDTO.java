@@ -1,8 +1,6 @@
 package com.epam.finaltask.dto;
 
 import java.util.List;
-
-import com.epam.finaltask.annotation.validation.ValidPassword;
 import com.epam.finaltask.dto.groups.OAuthGroup;
 import com.epam.finaltask.dto.groups.PasswordGroup;
 import com.epam.finaltask.model.Voucher;

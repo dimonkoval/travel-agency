@@ -23,8 +23,6 @@ public interface VoucherRepository extends JpaRepository<Voucher, UUID> {
     Page<Voucher> findAllByPrice(Double price, Pageable pageable);
     Page<Voucher> findAllByHotelType(HotelType hotelType, Pageable pageable);
 
-    @Query("SELECT v FROM Voucher v")
-    List<Voucher> findAllVouchers();
     @Query("SELECT v FROM Voucher v WHERE " +
             "(:title IS NULL OR LOWER(v.title) LIKE LOWER(CAST(CONCAT('%', :title, '%') AS string))) AND " +
             "(:tourType IS NULL OR v.tourType = :tourType) AND " +

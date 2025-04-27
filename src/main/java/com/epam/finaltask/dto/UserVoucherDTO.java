@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -27,13 +26,4 @@ public class UserVoucherDTO {
     private LocalDate evictionDate;
     private Boolean isHot;
 
-    public UserVoucherDTO(String id, String title, BigDecimal price, String status,
-                          LocalDate arrivalDate, LocalDate evictionDate) {
-        this.id = id;
-        this.title = title;
-        this.price = price;
-        this.status = status;
-        this.arrivalDate = arrivalDate;
-        this.evictionDate = evictionDate;
-    }
 }

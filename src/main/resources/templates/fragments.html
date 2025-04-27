@@ -9,27 +9,31 @@
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-                <a th:href="@{/}" class="btn btn-secondary">
+                <a th:href="@{/}"
+                   th:class="'nav-link' + ((requestURI == contextPath or requestURI == contextPath + '/') ? ' active' : '')">
                     <i class="bi bi-house"></i>
                     <span th:text="#{navbar.home}">Home</span>
-
                 </a>
             </li>
+
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" th:href="@{/user/dashboard}">
-                    <i class="bi-search"></i>
+                <a th:href="@{/user/dashboard}"
+                th:class="'nav-link ' + (${#strings.startsWith(requestURI, contextPath + '/user/dashboard') ? 'active' : ''})" >
+                    <i class="bi bi-search"></i>
                     <span th:text="#{navbar.vouchers}">Vouchers</span>
                 </a>
             </li>
             <li class="nav-item" sec:authorize="hasRole('ADMIN') or hasRole('MANAGER')">
-                <a class="nav-link" th:href="@{/api/manager/vouchers}">
-                    <i class="bi-gear"></i>
+                <a th:href="@{/api/manager/vouchers}"
+                   th:class="'nav-link ' + (${#strings.startsWith(requestURI, contextPath + '/api/manager/vouchers') ? 'active' : ''})" >
+                    <i class="bi-person-circle"></i>
                     <span th:text="#{navbar.manager}">Manager</span>
                 </a>
             </li>
 
             <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                <a class="nav-link" th:href="@{/api/admin/users}">
+                <a th:href="@{/api/admin/users}"
+                   th:class="'nav-link ' + (${#strings.startsWith(requestURI, contextPath + '/api/admin/users') ? 'active' : ''})" >
                     <i class="bi-gear"></i>
                     <span th:text="#{navbar.admin}">Admin</span>
                 </a>

@@ -16,3 +16,8 @@
     bottom: 0;
     z-index: -1;
 }
+.navbar .nav-link.active {
+    color: white !important;
+    background-color: #0d6efd !important; /* Bootstrap синій */
+    border-radius: 5px;
+}

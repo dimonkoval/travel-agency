@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.mapper.VoucherMapper;
 import com.epam.finaltask.model.Voucher;
-import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.repository.VoucherRepository;
 import com.epam.finaltask.service.impl.VoucherServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,9 +33,6 @@ class VoucherServiceImplTest {
 
     @Mock
     private VoucherRepository voucherRepository;
-
-    @Mock
-    private UserRepository userRepository;
 
     @Mock
     private VoucherMapper voucherMapper;

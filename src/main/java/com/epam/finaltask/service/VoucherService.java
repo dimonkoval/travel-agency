@@ -2,15 +2,12 @@ package com.epam.finaltask.service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-
 import com.epam.finaltask.dto.UserVouchersForReviewDTO;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.model.HotelType;
 import com.epam.finaltask.model.TourType;
 import com.epam.finaltask.model.TransferType;
-import com.epam.finaltask.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -38,10 +35,6 @@ public interface VoucherService {
     void cancelOrder(String userVoucherId);
 
     void cancelVoucher(UUID userVoucherId);
-
-    Map<User, List<VoucherDTO>> getVouchersGroupedByUser();
-
-    List<VoucherDTO> getAllVouchersWithUsers();
 
     List<UserVouchersForReviewDTO> getUsersVouchersForReview();
 

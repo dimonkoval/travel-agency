@@ -23,9 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,18 +56,7 @@ public class VoucherServiceImpl implements VoucherService {
         User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
 
-//        Double userBalance = user.getBalance();
-//        Double voucherPrice = voucher.getPrice();
-//
-//        if (user.getBalance() < voucher.getPrice()) {
-//            throw new IllegalArgumentException("Not enough money to buy this voucher.");
-//        }
-//
-//        user.setBalance(user.getBalance() - voucher.getPrice());
-//        userRepository.save(user);
-
         UserVoucher userVoucher = userVoucherMapper.createUserVoucher(user, voucher);
-//        userVoucher.setStatus(VoucherStatus.REGISTERED);
         userVoucherRepository.save(userVoucher);
         return voucherMapper.toVoucherDTO(voucher);
     }
@@ -100,16 +87,12 @@ public class VoucherServiceImpl implements VoucherService {
     public List<VoucherDTO> findAllByUserId(String userId) {
         try {
             UUID uuid = UUID.fromString(userId);
-//            List<Voucher> vouchers = voucherRepository.findAllByUserId(uuid);
             List<UserVoucher> userVouchers = userVoucherRepository.findAllByUserId(uuid);
             if (userVouchers == null) {
                 return Collections.emptyList();
             }
 
             return userVoucherMapper.toVoucherDTOList(userVouchers);
-//            return vouchers.stream()
-//                    .map(voucherMapper::toVoucherDTO)
-//                    .toList();
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Невірний формат userId");
         }
@@ -141,9 +124,6 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public List<VoucherDTO> findAll() {
-//        return voucherRepository.findAllVouchers().stream()
-//                .map(voucherMapper::toVoucherDTO)
-//                .collect(Collectors.toList());
         return voucherRepository.findAll().stream()
                 .map(voucherMapper::toVoucherDTO)
                 .collect(Collectors.toList());
@@ -215,38 +195,8 @@ public class VoucherServiceImpl implements VoucherService {
         }
     }
 
-    @Override
-    public Map<User, List<VoucherDTO>> getVouchersGroupedByUser() {
-        List<UserVoucher> userVouchers = userVoucherRepository.findAllWithUserAndVoucher();
-
-        return userVouchers.stream()
-                .collect(Collectors.groupingBy(
-                        UserVoucher::getUser,
-                        Collectors.mapping(userVoucherMapper::toVoucherDTO, Collectors.toList())
-                ));
-    }
-
-    @Override
-    public List<VoucherDTO> getAllVouchersWithUsers() {
-        return userVoucherRepository.findAllWithUserAndVoucher()
-                .stream()
-                .map(userVoucherMapper::toVoucherDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void markAsHot(UUID id) {
-        Voucher voucher = voucherRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND));
-        voucher.setIsHot(true);
-        voucherRepository.save(voucher);
-    }
-
     public List<UserVouchersForReviewDTO> getUsersVouchersForReview() {
         List<UserVoucher> userVouchers = userVoucherRepository.findAllWithUserAndVoucher();
-
-//        Map<User, List<UserVoucher>> grouped = userVouchers.stream()
-//                .collect(Collectors.groupingBy(UserVoucher::getUser));
 
         Map<User, List<UserVoucher>> grouped = userVouchers.stream()
                 .collect(Collectors.groupingBy(
@@ -268,7 +218,6 @@ public class VoucherServiceImpl implements VoucherService {
                             .map(UserVoucherDTO::getPrice)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    // Поки немає реальних даних по замовленнях — умовно вважаємо totalOrdersSum кількістю ваучерів (можеш замінити логікою з реальних даних)
                     BigDecimal totalOrdersSum = BigDecimal.valueOf(voucherDTOs.size());
 
                     return UserVouchersForReviewDTO.builder()
@@ -298,5 +247,4 @@ public class VoucherServiceImpl implements VoucherService {
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
 }

@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -84,7 +83,6 @@ public class AuthenticationRestController {
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
             Locale locale,
-            HttpServletRequest request,
             HttpServletResponse response
     ) {
         try {
@@ -143,7 +141,6 @@ public class AuthenticationRestController {
         new SecurityContextLogoutHandler().logout(request, response, null);
         return "redirect:/";
     }
-
 
     @Operation(summary = "Accepts a refresh token and returns a new access token.")
     @RestResponse

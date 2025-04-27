@@ -10,7 +10,6 @@ import java.util.UUID;
 import com.epam.finaltask.model.HotelType;
 import com.epam.finaltask.model.TourType;
 import com.epam.finaltask.model.TransferType;
-import com.epam.finaltask.model.User;
 import com.epam.finaltask.model.Voucher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

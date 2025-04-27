@@ -76,7 +76,7 @@ public class VoucherRestController {
                                 RedirectAttributes redirectAttributes) {
         log.info("Updating voucher with ID: {}", id);
         log.info("Received data: {}", voucherDTO);
-        VoucherDTO updatedVoucher = voucherService.update(id, voucherDTO);
+        voucherService.update(id, voucherDTO);
         redirectAttributes.addFlashAttribute("message", "Voucher updated successfully");
         return "redirect:/user/dashboard";
     }

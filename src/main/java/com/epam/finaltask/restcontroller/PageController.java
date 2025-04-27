@@ -8,8 +8,6 @@ import com.epam.finaltask.model.TourType;
 import com.epam.finaltask.model.TransferType;
 import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.service.VoucherService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,9 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import java.security.Principal;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -99,7 +95,6 @@ public class PageController {
         }else if (!error.isEmpty()) {
             model.addAttribute("message", error);
         }
-
         return "user/dashboard";
     }
 
@@ -111,29 +106,5 @@ public class PageController {
             return userDetails.getUsername();
         }
         throw new IllegalStateException("Невідомий тип аутентифікації: " + principal.getClass().getName());
-    }
-
-    private void loadUserData(Model model, String email) {
-        UserDTO user = userService.findUserByEmail(email);
-        List<VoucherDTO> vouchers = voucherService.findAll();
-
-        model.addAttribute("user", user);
-        model.addAttribute("vouchers", vouchers);
-    }
-
-    private void handleFlashMessages(Model model, HttpSession session) {
-
-        String sessionMessage = (String) session.getAttribute("message");
-        String sessionError = (String) session.getAttribute("error");
-
-        if (sessionMessage != null) {
-            model.addAttribute("message", sessionMessage);
-            session.removeAttribute("message");
-        }
-
-        if (sessionError != null) {
-            model.addAttribute("error", sessionError);
-            session.removeAttribute("error");
-        }
     }
 }
