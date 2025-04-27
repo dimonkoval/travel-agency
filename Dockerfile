@@ -9,5 +9,5 @@ RUN apt-get update && apt-get install -y maven
 # Збираємо JAR
 RUN mvn clean install
 
-# Запускаємо JAR (назва відповідає вашому pom.xml)
+# Запускаємо JAR (назва береться з pom.xml: travel.agency-0.0.1-SNAPSHOT.jar)
 CMD ["java", "-jar", "target/travel.agency-0.0.1-SNAPSHOT.jar"]
