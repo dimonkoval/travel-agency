@@ -5,7 +5,7 @@ services:
     repo: https://github.com/dimonkoval/travel-agency
     region: frankfurt
     plan: free
-    buildCommand: ./mvnw clean package
+    buildCommand: ./mvnw -B clean package
     startCommand: java -jar target/travel.agency-0.0.1-SNAPSHOT.jar
     branch: main
 #    dockerfilePath: ./Dockerfile
