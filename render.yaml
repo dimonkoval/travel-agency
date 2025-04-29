@@ -1,17 +1,17 @@
 services:
   - type: web
-    name: travel-agency
-    region: frankfurt    # або інший регіон за потреби
-    plan: free           # або оплачені плани
+    name: spring-boot-app          # довільне ім'я сервісу
     runtime: docker
-    dockerfilePath: ./Dockerfile
-    healthCheckPath: /
+    region: Oregon (US West)              # виберіть регіон (наприклад, EU – Frankfurt)
+    plan: free                     # план (Starter Free)
+    healthCheckPath: /            # шлях для перевірки стану (за потреби)
     envVars:
       - key: PORT
-        value: "8080"
+        value: "10000"
+      # --- Змінні для OAuth2/JWT (приклад)
       - key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
-        value: "fake-google-id"
+        value: fake-client-id
       - key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
-        value: "fake-google-secret"
-      - key: SECURITY_JWT_SECRET
-        value: "fake-jwt-secret"
+        value: fake-secret
+      - key: JWT_SECRET
+        value: fake-jwt-secret
