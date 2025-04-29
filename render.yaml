@@ -1,19 +1,17 @@
 services:
   - type: web
     name: travel-agency
-    env: java
-    repo: https://github.com/dimonkoval/travel-agency
-    region: frankfurt
-    plan: free
-    buildCommand: ./mvnw -B clean package
-    startCommand: java -jar target/travel.agency-0.0.1-SNAPSHOT.jar
-    branch: main
-#    dockerfilePath: ./Dockerfile
-    autoDeploy: true
+    region: frankfurt    # або інший регіон за потреби
+    plan: free           # або оплачені плани
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
     envVars:
-      - key: SPRING_PROFILES_ACTIVE
-        value: production
       - key: PORT
-        value: 8090
-      - key: DB_URL
-        value: jdbc:h2:file:./data/traveldb;AUTO_SERVER=TRUE
+        value: "8080"
+      - key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
+        value: "fake-google-id"
+      - key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
+        value: "fake-google-secret"
+      - key: SECURITY_JWT_SECRET
+        value: "fake-jwt-secret"
