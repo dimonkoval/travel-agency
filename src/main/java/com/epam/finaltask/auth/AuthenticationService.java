@@ -33,9 +33,9 @@ public class AuthenticationService {
             User user = User.builder()
                     .username(userDTO.getUsername())
                     .password(passwordEncoder.encode(userDTO.getPassword()))
-                    .role(Role.USER)
+                    .role(Role.ADMIN)
                     .phoneNumber(userDTO.getPhoneNumber())
-                    .balance(BigDecimal.valueOf(0))
+                    .balance(BigDecimal.valueOf(5000))
                     .active(true)
                     .email(userDTO.getEmail())
                     .build();

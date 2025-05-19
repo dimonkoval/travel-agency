@@ -41,7 +41,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     newUser.isAccountNonExpired();
                     newUser.isAccountNonLocked();
                     newUser.isAccountNonExpired();
-                    newUser.setRole((Role.USER));
+                    newUser.setRole((Role.ADMIN));
                     return userRepository.save(newUser);
                 });
 

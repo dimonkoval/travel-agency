@@ -1,13 +1,11 @@
-FROM eclipse-temurin:17-jdk
-
-WORKDIR /app
+FROM maven:3.8.3-openjdk-17 AS build
 COPY . .
+RUN mvn clean package -DskipTests
 
-# Встановлюємо Maven
-RUN apt-get update && apt-get install -y maven
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY target/*.jar app.jar
+EXPOSE 10000
+ENTRYPOINT ["java","-jar","/app/app.jar"]
 
-# Збираємо JAR
-RUN mvn clean install
 
-# Запускаємо JAR (назва береться з pom.xml: travel.agency-0.0.1-SNAPSHOT.jar)
-CMD ["java", "-jar", "target/travel.agency-0.0.1-SNAPSHOT.jar"]
