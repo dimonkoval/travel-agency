@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: spring-boot-app
+    runtime: docker
+    region: Oregon (US West)
+    plan: free
+    healthCheckPath: /
+    envVars:
+    - key: PORT
+      value: "10000"
